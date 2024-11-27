@@ -31,8 +31,7 @@ class Api extends AbstractAPI
     public function request(string $method, array $data)
     {
         $params = $this->getCommonParams($method);
-        $jsonData = json_encode($data, JSON_UNESCAPED_UNICODE);
-        $params['sign'] = $this->signature($params, $jsonData);
+        $params['sign'] = $this->signature($params, $data);
         $fullUrl = $this->baseUrl . '?' . http_build_query($params);
         $response = $this->getHttp()->json($fullUrl, $data);
 
@@ -43,9 +42,9 @@ class Api extends AbstractAPI
      * 签名.
      *
      * @param array $params query参数
-     * @param string $jsonBodyData 请的body中的json数据
+     * @param array $data 请的body中的数据
      */
-    public function signature($params, $jsonBodyData)
+    public function signature($params, $data)
     {
         ksort($params);
         $paramsStr = '';
@@ -54,6 +53,7 @@ class Api extends AbstractAPI
                 $paramsStr .= $key . $value;
             }
         }
+        $jsonBodyData = json_encode($data);
         $signStr = $this->appSecret . $paramsStr . $jsonBodyData . $this->appSecret;
         return strtoupper(md5($signStr));
     }
